@@ -1,0 +1,20 @@
+# Python build and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+backend/tasks.db
+
+# Node modules and production builds
+node_modules/
+dist/
+dist-ssr
+*.local
+
+# Editor configuration files
+.vscode/
+.idea/
+*.suo
+*.ntvs*

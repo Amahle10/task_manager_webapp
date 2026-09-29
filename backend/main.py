@@ -24,13 +24,13 @@ def read_tasks(db: Session = Depends(database.get_db)):
 def read_task(task_id: int, db: Session = Depends(database.get_db)):
     db_task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if not db_task:
-        raise HTTPException(status_code=404, detail="Task target resource not found.")
+        raise HTTPException(status_code=404, detail="Task could not be found.")
     return db_task
 
 @app.post("/api/tasks", response_model=schemas.TaskResponse, status_code=status.HTTP_201_CREATED)
 def create_task(task: schemas.TaskCreate, db: Session = Depends(database.get_db)):
     if not task.title.strip():
-        raise HTTPException(status_code=400, detail="Empty title rejected.")
+        raise HTTPException(status_code=400, detail="Task title is required.")
     try:
         db_task = models.Task(**task.model_dump())
         db.add(db_task)
@@ -39,16 +39,16 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(database.get_db)
         return db_task
     except Exception:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Database transaction failure during creation.")
+        raise HTTPException(status_code=500, detail="Failed to create task.")
 
 @app.put("/api/tasks/{task_id}", response_model=schemas.TaskResponse)
 def update_task(task_id: int, updated_task: schemas.TaskUpdate, db: Session = Depends(database.get_db)):
     db_task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if not db_task:
-        raise HTTPException(status_code=404, detail="Task target resource not found.")
+        raise HTTPException(status_code=404, detail="Task could not be found.")
     
     if updated_task.title is not None and not updated_task.title.strip():
-        raise HTTPException(status_code=400, detail="Empty title rejected.")
+        raise HTTPException(status_code=400, detail="Task title is required.")
         
     try:
         task_data = updated_task.model_dump(exclude_unset=True)
@@ -59,20 +59,20 @@ def update_task(task_id: int, updated_task: schemas.TaskUpdate, db: Session = De
         return db_task
     except Exception:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Database transaction failure during updates.")
+        raise HTTPException(status_code=500, detail="Failed to update task.")
 
-@app.delete("/api/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/api/tasks/{task_id}", status_code=status.HTTP_200_OK)
 def delete_task(task_id: int, db: Session = Depends(database.get_db)):
     db_task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if not db_task:
-        raise HTTPException(status_code=404, detail="Task target resource not found.")
+        raise HTTPException(status_code=404, detail="Task could not be found.")
     try:
         db.delete(db_task)
         db.commit()
-        return None
+        return {"detail": "Task successfully deleted."}
     except Exception:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Database transaction failure during deletion.")
+        raise HTTPException(status_code=500, detail="Failed to delete task.")
 
 if __name__ == "__main__":
     import uvicorn

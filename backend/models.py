@@ -1,4 +1,5 @@
-from sqlalchemy import Boolean, Column, Integer, String
+import datetime
+from sqlalchemy import Column, Integer, String, DateTime
 from database import Base
 
 class Task(Base):
@@ -7,4 +8,5 @@ class Task(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True, nullable=False)
     description = Column(String, nullable=True)
-    completed = Column(Boolean, default=False)
+    status = Column(String, default="TODO", nullable=False)  # TODO, IN_PROGRESS, COMPLETED
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
